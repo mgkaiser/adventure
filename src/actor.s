@@ -1,0 +1,326 @@
+.scope
+.define current_file "actor.s"
+
+.include "mac.inc"
+.include "rooms.inc"
+.include "actor.inc"
+
+.segment "MAIN"
+
+; Define exports for all public variables in this module
+
+.export player      ; Sprite 0
+.export dragon_1    ; Sprite 1 - Only One dragon on screen at a time
+.export dragon_2    ; Sprite 1
+.export dragon_3    ; Sprite 1
+.export bat         ; Sprite 2
+.export bridge      ; Sprite 3
+.export key         ; Sprite 4  
+.export magnet      ; Sprite 5
+.export sword       ; Sprite 6
+.export chalice     ; Sprite 7
+.export number      ; Sprite 7 - Number and chalice never on screen at same time
+
+; Define exports for all public functions in this module
+.export actor_init
+.export actor_copy
+.export actor_update_sprite
+.export actor_move
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Variables that do not require initialization
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.segment "BSS"
+
+player:     .res .sizeof(actor) ; The player actor structure
+dragon_1:   .res .sizeof(actor) ; The first dragon actor structure
+dragon_2:   .res .sizeof(actor) ; The second dragon actor structure
+dragon_3:   .res .sizeof(actor) ; The third dragon actor structure
+bat:        .res .sizeof(actor) ; The bat actor structure
+magnet:     .res .sizeof(actor) ; The magnet actor structure
+bridge:     .res .sizeof(actor) ; The bridge actor structure
+sword:      .res .sizeof(actor) ; The sword actor structure
+number:     .res .sizeof(actor) ; The number actor structure
+chalice:    .res .sizeof(actor) ; The chalice actor structure
+key:        .res .sizeof(actor) ; The key actor structure   
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Variables that DO require initialization
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.segment "DATA"
+or_table: .byte $01, $02, $04, $08, $10, $20, $40, $80
+and_table: .byte $FE, $FD, $FB, $F7, $EF, $DF, $BF, $7F
+
+player_defaults:
+    .byte 0                 ; room_num
+    .word 100               ; x_pos
+    .byte 150               ; y_pos
+    .word 0                 ; dx   
+    .byte 0                 ; dy
+    .byte 0                 ; char_x
+    .byte 0                 ; char_y
+    .byte VIC_COL_YELLOW    ; color
+    .byte 0                 ; sprite_num
+    ;.byte dragon_open / 64  ; sprite_ptr
+    .byte 0  ; sprite_ptr
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Main Program Code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+.segment "MAIN"
+.proc actor_init: near
+
+    ; Enable sprites
+    lda #$ff    
+    sta VIC_CTRL1
+
+    ; Initialize player actor
+    mov_imm_16 R0, player
+    mov_imm_16 R1, player_defaults        
+    ;jsr actor_copy
+
+    rts
+.endproc
+
+; Actor copy routine
+; Usage:
+;   R0: Pointer to destination actor structure
+;   R1: Pointer to source actor structure
+; Returns:
+;   Nothing
+; Results:
+;   Actor structure copied
+; Destroys:
+;   All registers
+.proc actor_copy : near
+    
+    ldy #$00
+actor_copy_loop:    
+    lda (R1), y
+    sta (R0), y      
+    iny
+    cpy #.sizeof(actor)    
+    bne actor_copy_loop
+
+    rts
+
+.endproc
+
+; Actor sprite update routine
+; Usage:
+;   R0: Pointer to actor structure
+; Returns:
+;   Nothing
+; Results:
+;   Actor sprite updated
+; Destroys:
+;   All registers
+.proc actor_update_sprite: near
+
+    ; Get sprite number
+    ldy #actor::sprite_num
+    lda (R0), y
+    sta R1L
+
+    ; Is the actor in the current room?
+    ldy #actor::room_num
+    lda (R0), y
+    cmp current_room
+    bne actor_update_sprite_hide
+
+    ; Show the actor
+    lda VIC_CTRL1
+    ldx R1L    
+    ora or_table,X
+    sta VIC_CTRL1
+        
+    ; PTR1 = $D000 + (R1L * 2)    
+    asl a
+    clc    
+    sta PTR1
+    lda #$D0
+    sta PTR1+1
+
+    ; PTR1->0 = R0->actor::x_pos
+    ldy #actor::x_pos
+    lda (R0), y
+    ldy #$00    
+    sta (PTR1), y
+        
+    ; Decide if we set or clear the high bit
+    ldy #actor::x_pos+1
+    lda (R0), y
+    and #$01
+    bne clear_high_bit
+
+    ; Set the high bit
+    ldx R1L
+    lda VIC_SPRITEX_MSB
+    ora or_table,x
+    sta VIC_SPRITEX_MSB
+
+    bra high_bit_endif
+
+clear_high_bit:
+    
+    ; Clear the high bit   
+    ldx R1L
+    lda VIC_SPRITEX_MSB
+    and and_table,x
+    sta VIC_SPRITEX_MSB
+
+high_bit_endif:
+    ; PTR1->1 = R0->actor::y_pos
+    ldy #actor::y_pos
+    lda (R0), y
+    ldy #$01
+    sta (PTR1), y
+
+    ; Set the sprite color
+    ldy #actor::color
+    lda (R0), y
+    ldx R1L
+    sta VIC_SPRITE_COL1,x    
+
+    ; Set the sprite Image
+    ldy #actor::sprite_ptr
+    lda (R0), y
+    ldx R1L
+    sta VIC_SPRITEPTR,x
+
+    bra actor_update_sprite_end
+
+actor_update_sprite_hide:
+
+    ; Hide the actor sprite
+    lda VIC_CTRL1
+    ldx R1L    
+    and and_table,X
+    sta VIC_CTRL1
+
+actor_update_sprite_end:    
+
+    rts
+
+.endproc
+
+; Actor movement routine
+; Usage:
+;   R0: Pointer to actor structure
+; Returns:
+;   Nothing
+; Results:
+;   Actor position updated
+; Destroys:
+;   All registers
+.proc actor_move: near
+
+    ; TMP1 = R0->actor::x_pos + R0->actor::dx
+    clc
+    ldy #actor::x_pos
+    lda (R0), y
+    ldy #actor::dx
+    adc (R0), y
+    sta TMP1
+    ldy #actor::x_pos+1
+    lda (R0), y
+    adc (R0), y
+    sta TMP1+1
+
+    ; TMP2 = R0->actor::y_pos + R0->actor::dy
+    ldy #actor::y_pos
+    lda (R0), y
+    ldy #actor::dy
+    adc (R0), y
+    sta TMP2
+    
+    ; TMP3L = (TMP1 - 24) / 8
+    sec             ; TMP3L = (TMP1 - 24)    
+    lda TMP1        
+    sbc #24    
+    sta TMP3L
+    lda TMP1+1
+    sbc #0
+    sta TMP3H    
+    .repeat 3       ; TMP3L = TMP3L / 8
+    lsr TMP3H
+    ror TMP3L
+    .endrepeat
+
+    ; TMP3H = (TMP2 - 50) / 8
+    sec             ; TMP3H = (TMP2 - 50)
+    lda TMP2        
+    sbc #50
+    sta TMP3H
+    .repeat 3       ; TMP3H = TMP3H / 8
+    ror TMP3H
+    .endrepeat  
+
+    ; Is the character at this cell a space?
+
+    ; PTR1 = $0400 + (TMP2 * 40) + TMP1
+    lda TMP2        ; PTR1 = (TMP2 * 40)
+    .repeat 5
+    asl a
+    .endrepeat
+    sta PTR1
+    lda TMP2
+    .repeat 3
+    asl a
+    .endrepeat
+    clc
+    adc PTR1
+    sta PTR1
+
+    clc             ; PTR1 = PTR1 + TMP1 + $0400
+    lda TMP1        
+    adc PTR1
+    sta PTR1
+    lda TMP1+1    
+    adc PTR1+1
+    sta PTR1+1
+
+    clc             ; PTR1 = PTR1 + $0400
+    lda PTR1
+    adc #$04
+    sta PTR1
+    lda PTR1+1
+    adc #$00
+    sta PTR1+1
+
+    ; Add code here to skip the check if the actor is within the bounding box of the bridge
+
+    ; Is the proposed new location a space?
+    ldy #$00
+    lda (PTR1), y   ; A = screen memory at PTR1
+    cmp #' '        ; Is it a space?
+    bne discard_the_result  ; If not, discard the new position  
+    
+    ; R0=>actor::x_pos = TMP1
+    ldy #actor::x_pos
+    lda TMP1
+    sta (R0), y
+    ldy #actor::x_pos+1
+    lda TMP1+1
+    sta (R0), y
+
+    ; R0=>actor::y_pos = TMP2
+    ldy #actor::y_pos
+    lda TMP2
+    sta (R0), y
+    
+    ; R0->actor::char_x = TMP3L
+    ldy #actor::char_x
+    lda TMP3L
+    sta (R0), y
+    ; R0->actor::char_y = TMP3H
+    ldy #actor::char_y
+    lda TMP3H
+    sta (R0), y
+
+discard_the_result:
+
+    rts 
+.endproc
+
+.endscope
