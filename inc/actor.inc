@@ -12,6 +12,13 @@
     .import chalice: near
     .import key: near    
 
+    ; sprite data
+    .import dragon_open : near
+    .import dragon_closed : near
+    .import number_one : near
+    .import number_two : near
+    .import number_three : near
+
     ; functions
     .import actor_init: near
     .import actor_copy: near

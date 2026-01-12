@@ -29,37 +29,37 @@ difficulty_level:   .res 1  ;  Current difficulty level (0=easy, 1=medium, 2=har
 .segment "DATA"
 
 roomDataTable:
-    .byte <NumberRoom,>NumberRoom,                $04,$21,$00,$00,$00,$00         ;00; 'Number Room.                          Purple           
-    .byte <BelowYellowCastle,>BelowYellowCastle,  $07,$A1,$08,$02,$80,$03         ;01; (Top Acess) Reflected/8 Clock Ball     Yellow           
-    .byte <BelowYellowCastle,>BelowYellowCastle,  $05,$21,$11,$03,$83,$01         ;02; (Top Access)                           Green           
-    .byte <LeftOfName,>LeftOfName,                $E8,$61,$06,$01,$86,$02         ;03; Left of Name                                            
-    .byte <BlueMazeTop,>BlueMazeTop,              $86,$21,$10,$05,$07,$06         ;04; Top of Blue Maze                       Blue            
-    .byte <BlueMaze1,>BlueMaze1,                  $86,$21,$1D,$06,$08,$04         ;05; Blue Maze #1                           Blue            
-;  .byte <BlueMazeBottom,>BlueMazeBottom,        $86,$21,$07,$04,$03,$05         ;06; Bottom of Blue Maze                    Blue            
-;  .byte <BlueMazeCenter,>BlueMazeCenter,        $86,$21,$04,$08,$06,$08         ;07; Center of Blue Maze                    Blue            
-;  .byte <BlueMazeEntry,>BlueMazeEntry,          $86,$21,$05,$07,$01,$07         ;08; Blue Maze Entry                        Blue            
-;  .byte <MazeMiddle,>MazeMiddle,                $08,$25,$0A,$0A,$0B,$0A         ;09; Maze Middle                            Invisible       
-;  .byte <MazeEntry,>MazeEntry,                  $08,$25,$03,$09,$09,$09         ;0A; Maze Entry                             Invisible       
-;  .byte <MazeSide,>MazeSide,                    $08,$25,$09,$0C,$1C,$0D         ;0B; Maze Side                              Invisible       
-;  .byte <SideCorridor,>SideCorridor,            $98,$61,$1C,$0D,$1D,$0B         ;0C; (Side Corridor)                                         
+    .byte <NumberRoom,>NumberRoom,                VIC_COL_PURPLE        ,$21,$00,$00,$00,$00         ;00; 'Number Room.                          Purple           
+    .byte <BelowYellowCastle,>BelowYellowCastle,  VIC_COL_YELLOW        ,$A1,$08,$02,$80,$03         ;01; (Top Acess) Reflected/8 Clock Ball     Yellow           
+    .byte <BelowYellowCastle,>BelowYellowCastle,  VIC_COL_GREEN         ,$21,$11,$03,$83,$01         ;02; (Top Access)                           Green           
+    .byte <LeftOfName,>LeftOfName,                VIC_COL_ORANGE        ,$61,$06,$01,$86,$02         ;03; Left of Name                                            
+    .byte <BlueMazeTop,>BlueMazeTop,              VIC_COL_BLUE          ,$21,$10,$05,$07,$06         ;04; Top of Blue Maze                       Blue            
+    .byte <BlueMaze1,>BlueMaze1,                  VIC_COL_BLUE          ,$21,$1D,$06,$08,$04         ;05; Blue Maze #1                           Blue            
+;    .byte <BlueMazeBottom,>BlueMazeBottom,        VIC_COL_BLUE          ,$21,$07,$04,$03,$05         ;06; Bottom of Blue Maze                    Blue            
+;    .byte <BlueMazeCenter,>BlueMazeCenter,        VIC_COL_BLUE          ,$21,$04,$08,$06,$08         ;07; Center of Blue Maze                    Blue            
+;    .byte <BlueMazeEntry,>BlueMazeEntry,          VIC_COL_BLUE          ,$21,$05,$07,$01,$07         ;08; Blue Maze Entry                        Blue            
+;    .byte <MazeMiddle,>MazeMiddle,                VIC_COL_GRAY          ,$25,$0A,$0A,$0B,$0A         ;09; Maze Middle                            Invisible       
+;    .byte <MazeEntry,>MazeEntry,                  VIC_COL_GRAY          ,$25,$03,$09,$09,$09         ;0A; Maze Entry                             Invisible       
+;    .byte <MazeSide,>MazeSide,                    VIC_COL_GRAY          ,$25,$09,$0C,$1C,$0D         ;0B; Maze Side                              Invisible       
+;    .byte <SideCorridor,>SideCorridor,            VIC_COL_LIGHT_BLUE    ,$61,$1C,$0D,$1D,$0B         ;0C; (Side Corridor)                                         
 ;  .byte <SideCorridor,>SideCorridor,            $B8,$A1,$0F,$0B,$0E,$0C         ;0D; (Side Corridor)                                         
 ;  .byte <TopEntryRoom,>TopEntryRoom,            $A8,$21,$0D,$10,$0F,$10         ;0E; (Top Entry Room)                                        
-    .byte <CastleDef,>CastleDef,                  $0C,$21,$0E,$0F,$0D,$0F         ;0F; White Castle                           White          
-    .byte <CastleDef,>CastleDef,                  $00,$21,$01,$1C,$04,$1C         ;10; Black Castle                           Black          
-    .byte <CastleDef,>CastleDef,                  $1A,$21,$06,$03,$02,$01         ;11; Yellow Castle                          Yellow          
-    .byte <NumberRoom,>NumberRoom,                $1A,$21,$12,$12,$12,$12         ;12; Yellow Castle Entry                    Yellow          
-;  .byte <BlackMaze1,>BlackMaze1,                $08,$25,$15,$14,$15,$16         ;13; Black Maze #1                          Invisible       
-;  .byte <BlackMaze2,>BlackMaze2,                $08,$24,$16,$15,$16,$13         ;14; Black Maze #2                          Invisible       
-;  .byte <BlackMaze3,>BlackMaze3,                $08,$24,$13,$16,$13,$14         ;15; Black Maze #3                          Invisible       
-;  .byte <BlackMazeEntry,>BlackMazeEntry,        $08,$25,$14,$13,$1B,$15         ;16; Black Maze Entry                       Invisible       
-;  .byte <RedMaze1,>RedMaze1,                    $36,$21,$19,$18,$19,$18         ;17; Red Maze #1                            Red             
-;  .byte <RedMazeTop,>RedMazeTop,                $36,$21,$1A,$17,$1A,$17         ;18; Top of Red Maze                        Red             
-;  .byte <RedMazeBottom,>RedMazeBottom,          $36,$21,$17,$1A,$17,$1A         ;19; Bottom of Red Maze                     Red             
-;  .byte <WhiteCastleEntry,>WhiteCastleEntry,    $36,$21,$18,$19,$18,$19         ;1A; White Castle Entry                     Red             
-;  .byte <TwoExitRoom,>TwoExitRoom,              $36,$21,$89,$89,$89,$89         ;1B; Black Castle Entry                     Red             
-    .byte <NumberRoom,>NumberRoom,                $66,$21,$1D,$07,$8C,$08         ;1C; Other Purple Room                      Purple          
-;  .byte <TopEntryRoom,>TopEntryRoom,            $36,$21,$8F,$01,$10,$03         ;1D; (Top Entry Room)                       Red             
-    .byte <BelowYellowCastle,>BelowYellowCastle,  $66,$21,$06,$01,$06,$03         ;1E; Name Room                              Yellow        
+    .byte <CastleDef,>CastleDef,                  VIC_COL_WHITE         ,$21,$0E,$0F,$0D,$0F         ;0F; White Castle                           White          
+    .byte <CastleDef,>CastleDef,                  VIC_COL_BLACK         ,$21,$01,$1C,$04,$1C         ;10; Black Castle                           Black          
+    .byte <CastleDef,>CastleDef,                  VIC_COL_YELLOW        ,$21,$06,$03,$02,$01         ;11; Yellow Castle                          Yellow          
+    .byte <NumberRoom,>NumberRoom,                VIC_COL_YELLOW        ,$21,$12,$12,$12,$12         ;12; Yellow Castle Entry                    Yellow          
+;    .byte <BlackMaze1,>BlackMaze1,                VIC_COL_GRAY          ,$25,$15,$14,$15,$16         ;13; Black Maze #1                          Invisible       
+;    .byte <BlackMaze2,>BlackMaze2,                VIC_COL_GRAY          ,$24,$16,$15,$16,$13         ;14; Black Maze #2                          Invisible       
+;    .byte <BlackMaze3,>BlackMaze3,                VIC_COL_GRAY          ,$24,$13,$16,$13,$14         ;15; Black Maze #3                          Invisible       
+;    .byte <BlackMazeEntry,>BlackMazeEntry,        VIC_COL_GRAY          ,$25,$14,$13,$1B,$15         ;16; Black Maze Entry                       Invisible       
+;    .byte <RedMaze1,>RedMaze1,                    VIC_COL_RED           ,$21,$19,$18,$19,$18         ;17; Red Maze #1                            Red             
+;    .byte <RedMazeTop,>RedMazeTop,                VIC_COL_RED           ,$21,$1A,$17,$1A,$17         ;18; Top of Red Maze                        Red             
+;    .byte <RedMazeBottom,>RedMazeBottom,          VIC_COL_RED           ,$21,$17,$1A,$17,$1A         ;19; Bottom of Red Maze                     Red             
+;    .byte <WhiteCastleEntry,>WhiteCastleEntry,    VIC_COL_RED           ,$21,$18,$19,$18,$19         ;1A; White Castle Entry                     Red             
+;    .byte <TwoExitRoom,>TwoExitRoom,              VIC_COL_RED           ,$21,$89,$89,$89,$89         ;1B; Black Castle Entry                     Red             
+    .byte <NumberRoom,>NumberRoom,                VIC_COL_PURPLE        ,$21,$1D,$07,$8C,$08         ;1C; Other Purple Room                      Purple          
+;    .byte <TopEntryRoom,>TopEntryRoom,            VIC_COL_RED           ,$21,$8F,$01,$10,$03         ;1D; (Top Entry Room)                       Red             
+    .byte <BelowYellowCastle,>BelowYellowCastle,  VIC_COL_YELLOW        ,$21,$06,$01,$06,$03         ;1E; Name Room                              Yellow        
 
 ; Room Exits Replacement Data
 ; When room number is >= $80, use these exit replacements

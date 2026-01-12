@@ -112,14 +112,16 @@ VIC_SPRITE7_Y    = VIC_BASE + $0d
 VIC_SPRITE8_X    = VIC_BASE + $0e
 VIC_SPRITE8_Y    = VIC_BASE + $0f
 VIC_SPRITEX_MSB  = VIC_BASE + $10    
-VIC_SPRITE_COL1  = VIC_BASE + $25
-VIC_SPRITE_COL2  = VIC_BASE + $26
-VIC_SPRITE_COL3  = VIC_BASE + $27
-VIC_SPRITE_COL4  = VIC_BASE + $28
-VIC_SPRITE_COL5  = VIC_BASE + $29
-VIC_SPRITE_COL6  = VIC_BASE + $2a
-VIC_SPRITE_COL7  = VIC_BASE + $2b
-VIC_SPRITE_COL8  = VIC_BASE + $2c
+VIC_SPRITE_MC1   = VIC_BASE + $25
+VIC_SPRITE_MC2   = VIC_BASE + $26
+VIC_SPRITE_COL1  = VIC_BASE + $27
+VIC_SPRITE_COL2  = VIC_BASE + $28
+VIC_SPRITE_COL3  = VIC_BASE + $29
+VIC_SPRITE_COL4  = VIC_BASE + $2a
+VIC_SPRITE_COL5  = VIC_BASE + $2b
+VIC_SPRITE_COL6  = VIC_BASE + $2c
+VIC_SPRITE_COL7  = VIC_BASE + $2d
+VIC_SPRITE_COL8  = VIC_BASE + $2e
 
 VIC_SCREENPTR    = $0400
 VIC_SPRITEPTR    = VIC_SCREENPTR + $03F8
@@ -301,4 +303,35 @@ DEBUG_REG = $d7ff
 .macro bra label
     clv
     bvc label
+.endmacro
+
+; Call a subroutine if the accumulator matches a character
+; Usage:
+;   char:   Character to compare against
+;   target: Target subroutine to call if match
+; Returns:
+;   Nothing
+; Results:
+;   JSR to target if match
+.macro gosub_if_char char, target, endlabel 
+    cmp #char
+    bne :+
+    jsr target
+    jmp endlabel
+:    
+.endmacro
+
+; Jump to a target if the accumulator matches a character
+; Usage:
+;   char:   Character to compare against
+;   target: Target label to jump to if match
+; Returns:
+;   Nothing
+; Results:
+;   JMP to target if match
+; Destroys:
+;   Nothing
+.macro goto_if_char char, target 
+    cmp #char
+    beq target
 .endmacro

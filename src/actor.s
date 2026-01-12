@@ -8,7 +8,6 @@
 .segment "MAIN"
 
 ; Define exports for all public variables in this module
-
 .export player      ; Sprite 0
 .export dragon_1    ; Sprite 1 - Only One dragon on screen at a time
 .export dragon_2    ; Sprite 1
@@ -20,6 +19,13 @@
 .export sword       ; Sprite 6
 .export chalice     ; Sprite 7
 .export number      ; Sprite 7 - Number and chalice never on screen at same time
+
+; Define exports for sprite definitions
+.export dragon_open
+.export dragon_closed
+.export number_one
+.export number_two
+.export number_three
 
 ; Define exports for all public functions in this module
 .export actor_init
@@ -52,17 +58,78 @@ or_table: .byte $01, $02, $04, $08, $10, $20, $40, $80
 and_table: .byte $FE, $FD, $FB, $F7, $EF, $DF, $BF, $7F
 
 player_defaults:
-    .byte 0                 ; room_num
+    .byte dragon_open / 64  ; sprite_ptr    
+    .byte 0                 ; sprite_num
+    .byte 1                 ; room_num
+    .byte VIC_COL_YELLOW    ; color
     .word 100               ; x_pos
     .byte 150               ; y_pos
     .word 0                 ; dx   
     .byte 0                 ; dy
     .byte 0                 ; char_x
     .byte 0                 ; char_y
-    .byte VIC_COL_YELLOW    ; color
-    .byte 0                 ; sprite_num
-    ;.byte dragon_open / 64  ; sprite_ptr
-    .byte 0  ; sprite_ptr
+
+number_defaults:
+    .byte number_one / 64   ; sprite_ptr    
+    .byte 7                 ; sprite_num
+    .byte 0                 ; room_num
+    .byte VIC_COL_GREEN     ; color
+    .word 185               ; x_pos
+    .byte 134               ; y_pos
+    .word 0                 ; dx   
+    .byte 0                 ; dy
+    .byte 0                 ; char_x
+    .byte 0                 ; char_y    
+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Sprite Data
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+.segment "SPRITE_DATA"
+
+dragon_open:    .byte $80,$00,$00,$40,$00,$00,$26,$00
+                .byte $00,$1f,$00,$00,$0b,$00,$00,$0e
+                .byte $00,$00,$1e,$00,$00,$24,$00,$00
+                .byte $44,$00,$00,$8e,$00,$00,$1e,$00
+                .byte $00,$3f,$00,$00,$7f,$00,$00,$7f
+                .byte $00,$00,$7f,$00,$00,$7f,$00,$00
+                .byte $3e,$00,$00,$1c,$00,$00,$08,$00
+                .byte $00,$f8,$00,$00,$e0,$00,$00,$07
+
+dragon_closed:  .byte $06,$00,$00,$0f,$00,$00,$f3,$00
+                .byte $00,$fe,$00,$00,$0e,$00,$00,$04
+                .byte $00,$00,$04,$00,$00,$1e,$00,$00
+                .byte $3f,$00,$00,$7f,$00,$00,$e3,$00
+                .byte $00,$c3,$00,$00,$c3,$00,$00,$c7
+                .byte $00,$00,$ff,$00,$00,$3c,$00,$00
+                .byte $08,$00,$00,$8f,$00,$00,$e1,$00
+                .byte $00,$3f,$00,$00,$00,$00,$00,$07   
+
+number_one:     .byte $10,$00,$00,$30,$00,$00,$10,$00
+                .byte $00,$10,$00,$00,$10,$00,$00,$10
+                .byte $00,$00,$38,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$01
+
+number_two:     .byte $70,$00,$00,$88,$00,$00,$08,$00
+                .byte $00,$10,$00,$00,$20,$00,$00,$40
+                .byte $00,$00,$f8,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$01
+
+number_three:   .byte $70,$00,$00,$88,$00,$00,$08,$00
+                .byte $00,$30,$00,$00,$08,$00,$00,$88
+                .byte $00,$00,$70,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$01
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Main Program Code
@@ -70,14 +137,15 @@ player_defaults:
 .segment "MAIN"
 .proc actor_init: near
 
-    ; Enable sprites
-    lda #$ff    
-    sta VIC_CTRL1
-
     ; Initialize player actor
     mov_imm_16 R0, player
     mov_imm_16 R1, player_defaults        
-    ;jsr actor_copy
+    jsr actor_copy
+
+    ; Initialize number actor
+    mov_imm_16 R0, number
+    mov_imm_16 R1, number_defaults
+    jsr actor_copy
 
     rts
 .endproc
@@ -129,12 +197,13 @@ actor_copy_loop:
     bne actor_update_sprite_hide
 
     ; Show the actor
-    lda VIC_CTRL1
+    lda VIC_SPRITE_EN
     ldx R1L    
     ora or_table,X
-    sta VIC_CTRL1
+    sta VIC_SPRITE_EN
         
     ; PTR1 = $D000 + (R1L * 2)    
+    lda R1L
     asl a
     clc    
     sta PTR1
@@ -151,7 +220,7 @@ actor_copy_loop:
     ldy #actor::x_pos+1
     lda (R0), y
     and #$01
-    bne clear_high_bit
+    beq clear_high_bit
 
     ; Set the high bit
     ldx R1L
@@ -193,10 +262,10 @@ high_bit_endif:
 actor_update_sprite_hide:
 
     ; Hide the actor sprite
-    lda VIC_CTRL1
+    lda VIC_SPRITE_EN
     ldx R1L    
     and and_table,X
-    sta VIC_CTRL1
+    sta VIC_SPRITE_EN
 
 actor_update_sprite_end:    
 

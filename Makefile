@@ -61,6 +61,8 @@ resume:
 debug:
 	@rm -f $(BUILD_DIR)/debug_output.txt
 	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .roomDataTable 16 >> $(BUILD_DIR)/debug_output.txt	
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .player 12 >> $(BUILD_DIR)/debug_output.txt	
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .player_defaults 12 >> $(BUILD_DIR)/debug_output.txt	
 	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) fb 2 PTR1 >> $(BUILD_DIR)/debug_output.txt
 	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) fd 2 PTR2 >> $(BUILD_DIR)/debug_output.txt
 	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) 9b 2 PTR3 >> $(BUILD_DIR)/debug_output.txt
@@ -70,6 +72,9 @@ debug:
 	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) 02 2 R0 >> $(BUILD_DIR)/debug_output.txt
 	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) 04 2 R1 >> $(BUILD_DIR)/debug_output.txt
 	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) 06 2 R2 >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) d000 32 VIC >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug2.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) 07f8 8 SPRITE >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .difficulty_level 1 >> $(BUILD_DIR)/debug_output.txt	
 
 
 test: all

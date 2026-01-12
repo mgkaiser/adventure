@@ -1,18 +1,18 @@
-#define TOP_OF_RAM      $D000
-#define START_OF_CODE   $0810
-#define START_OF_BSS    $C800
-
 MEMORY {                
     LOADADDR:       start = $07ff,              size = $0002, fill = yes, fillval = $00;  
     STARTUP:        start = $0801,              size = $000f, fill = yes, fillval = $00;
-    MAIN:           start = START_OF_CODE,      size = START_OF_BSS - START_OF_CODE;        
-    BSS:            start = START_OF_BSS,       size = TOP_OF_RAM - START_OF_BSS;
+    STUB:           start = $0810,              size = $0030, fill = yes, fillval = $00;
+    SPRITE_DATA:    start = $0840,              size = $0400, fill = yes, fillval = $00;
+    MAIN:           start = $0c40,              size = $BBC0;
+    BSS:            start = $c800,              size = $0800;
 }
 
 SEGMENTS {                    
     LOADADDR:       load = LOADADDR,        type = ro;
     STARTUP:        load = STARTUP,         type = ro;
-    MAIN:           load = MAIN,            type = ro;     
-    DATA:           load = MAIN,            type = rw;
+    STUB:           load = STUB,            type = ro;
+    SPRITE_DATA:    load = SPRITE_DATA,     type = ro, align = $40;     
+    MAIN:           load = MAIN,            type = ro;    
+    DATA:           load = MAIN,            type = rw;    
     BSS:            load = BSS,             type = bss;
 }

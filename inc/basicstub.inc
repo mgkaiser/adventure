@@ -32,4 +32,7 @@ startup:
     lda #$37    
     sta $01
 
+    jsr $ff81 
+    jmp ($a002) 
+
 rts    
