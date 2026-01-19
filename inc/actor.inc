@@ -10,7 +10,13 @@
     .import sword: near
     .import number: near
     .import chalice: near
-    .import key: near    
+    .import gold_key: near
+    .import white_key: near
+    .import black_key: near
+    .import gold_port: near
+    .import white_port: near
+    .import black_port: near
+    .import sidewall: near
 
     ; sprite data
     .import dragon_open : near

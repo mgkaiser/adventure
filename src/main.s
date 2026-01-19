@@ -22,6 +22,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 .segment "DATA"
 
+str_current_room: .byte "CUR: ", $00
+str_difficulty:   .byte "DIF: ", $00
+str_north:        .byte "N: ", $00
+str_south:        .byte "S: ", $00
+str_east:         .byte "E: ", $00
+str_west:         .byte "W: ", $00
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Main Program Code
@@ -71,12 +77,33 @@ main_loop:
     ; Display the actors (this moves to interrupt eventually)
     mov_imm_16 R0, number  
     jsr actor_move     
-    jsr actor_update_sprite
+    jsr actor_update_sprite    
+
+    mov_imm_16 R0, player 
+    jsr actor_move     
+    jsr actor_update_sprite    
+
+    printat #0, #22, str_current_room
+    print_hex8 current_room
+    printat #0, #23, str_difficulty
+    print_hex8 difficulty_level
+    printat #10, #22, str_north
+    printat #16, #22, str_south
+    printat #22, #22, str_east
+    printat #28, #22, str_west
+    print_next_room #13, #22, room::north
+    print_next_room #19, #22, room::south
+    print_next_room #25, #22, room::east
+    print_next_room #31, #22, room::west    
     
     ; Check keys and act upon them
     getkey        
     gosub_if_char PETSCII_F1, select, main_end
     gosub_if_char PETSCII_F3, reset, main_end    
+    gosub_if_char PETSCII_CURSOR_LEFT, process_left, main_end
+    gosub_if_char PETSCII_CURSOR_RIGHT, process_right, main_end
+    gosub_if_char PETSCII_CURSOR_UP, process_up, main_end
+    gosub_if_char PETSCII_CURSOR_DOWN, process_down, main_end
     goto_if_char 'Q', exit_program  
 
 main_end:      
@@ -97,6 +124,54 @@ exit_program:
             
     rts
 
+.endproc
+
+.proc process_left : near
+
+    ; Process left movement
+    ldy #room::west
+    jsr next_room
+
+    ; Redraw the room
+    jsr display_room
+
+    rts
+.endproc
+
+.proc process_right : near
+
+    ; Process right movement    
+    ldy #room::east
+    jsr next_room
+
+    ; Redraw the room
+    jsr display_room
+
+    rts
+.endproc    
+
+.proc process_up : near
+
+    ; Process up movement
+    ldy #room::north
+    jsr next_room
+
+    ; Redraw the room
+    jsr display_room
+
+    rts
+.endproc    
+
+.proc process_down : near
+
+    ; Process down movement
+    ldy #room::south
+    jsr next_room
+
+    ; Redraw the room
+    jsr display_room
+
+    rts
 .endproc
 
 .proc select : near
@@ -147,7 +222,7 @@ select_end:
     ; Reset the game state for the level
 
     ; Set the room to the starting room
-    lda #$08
+    lda #$11
     sta current_room        ; Start in gold castle
     jsr display_room
     

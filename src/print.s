@@ -12,6 +12,10 @@
 .export print
 .export convert_16bit_to_decimal
 .export convert_16bitptr_to_decimal
+.export convert_16bit_to_hex
+.export convert_16bitptr_to_hex
+.export convert_8bit_to_hex
+.export convert_8bitptr_to_hex
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Variables that do not require initialization
@@ -25,7 +29,7 @@ DECIMAL_BUFFER: .res 6  ; Buffer for 5-digit decimal string
 ; Variables that DO require initialization
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 .segment "DATA"
-
+hex_table: .byte "0123456789ABCDEF"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Main Program Code
@@ -163,5 +167,142 @@ done_leading_zeros:
 
     rts
 .endproc
+
+; Convert a 16-bit number pointed to by the address in X and Y to hexadecimal
+; and print it using the print routine.
+; usage:
+;   ldx <low byte of address>
+;   ldy <high byte of address>
+;   jsr convert_16bitptr_to_hex
+; Result:
+;   DECIMAL_BUFFER contains the resulting null-terminated PETSCII string
+;   The string is also printed to the screen.
+; Destroyed:
+;   PTR1, TMP1, TMP1 + 1, A, X, Y
+.proc convert_16bitptr_to_hex    
+    stx PTR1
+    sty PTR1 + 1
+    ldy #$00
+    lda (PTR1), y
+    sta TMP1
+    iny
+    lda (PTR1), y
+    sta TMP1 + 1
+    jmp convert_16bit_to_hex
+.endproc
+
+; Convert the 16-bit number in TMP1:TMP1 + 1 to a hexadecimal string
+; and print it using the print routine.  This will always return
+; a string of 4 characters.
+; usage:
+;   TMP1:TMP1 + 1 = 16-bit number to convert
+;   jsr convert_16bit_to_hex
+; Result:
+;   DECIMAL_BUFFER contains the resulting null-terminated PETSCII string
+;   The string is also printed to the screen.
+; Destroyed:
+;   A, X, Y
+.proc convert_16bit_to_hex : near    
+    ; Convert high byte
+    lda TMP1 + 1
+    lsr a
+    lsr a
+    lsr a
+    lsr a    
+    tax
+    lda hex_table, x    
+    sta DECIMAL_BUFFER
+    lda TMP1 + 1
+    and #$0F
+    tax
+    lda hex_table, x    
+    sta DECIMAL_BUFFER + 1
+
+    ; Convert low byte
+    lda TMP1
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    lda hex_table, x    
+    sta DECIMAL_BUFFER + 2
+    lda TMP1
+    and #$0F
+    tax
+    lda hex_table, x    
+    sta DECIMAL_BUFFER + 3
+
+    ; Null-terminate the string
+    lda #$00
+    sta DECIMAL_BUFFER + 4
+
+    ; Print the resulting string
+    ldx #<DECIMAL_BUFFER
+    ldy #>DECIMAL_BUFFER
+    jsr print
+
+    rts
+.endproc
+
+; Convert an 8-bit number pointed to by the address in X and Y to hexadecimal
+; and print it using the print routine.
+; usage:
+;   ldx <low byte of address>
+;   ldy <high byte of address>
+;   jsr convert_8bitptr_to_hex
+; Result:
+;   DECIMAL_BUFFER contains the resulting null-terminated PETSCII string
+;   The string is also printed to the screen.
+; Destroyed:
+;   PTR1, TMP1, A, X, Y
+.proc convert_8bitptr_to_hex    
+    stx PTR1
+    sty PTR1 + 1
+    ldy #$00
+    lda (PTR1), y
+    sta TMP1
+    jmp convert_8bit_to_hex
+.endproc
+
+; Convert the 8-bit number in TMP1 to a hexadecimal string
+; and print it using the print routine.  This will always return
+; a string of 2 characters.
+; usage:
+;   TMP1 = 8-bit number to convert
+;   jsr convert_8bit_to_hex
+; Result:
+;   DECIMAL_BUFFER contains the resulting null-terminated PETSCII string
+;   The string is also printed to the screen.
+; Destroyed:
+;   A, X, Y
+.proc convert_8bit_to_hex : near    
+    ; Convert high nibble
+    lda TMP1
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    lda hex_table, x    
+    sta DECIMAL_BUFFER
+    ; Convert low nibble
+    lda TMP1
+    and #$0F
+    tax
+    lda hex_table, x    
+    sta DECIMAL_BUFFER + 1
+
+    ; Null-terminate the string
+    lda #$00
+    sta DECIMAL_BUFFER + 2
+
+    ; Print the resulting string
+    ldx #<DECIMAL_BUFFER
+    ldy #>DECIMAL_BUFFER
+    jsr print
+
+    rts
+.endproc    
 
 .endscope

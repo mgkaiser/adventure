@@ -9,11 +9,12 @@
 ; Define exports for all public variables in this module
 .export current_room
 .export difficulty_level
+.export roomDataTable
 
 ; Define exports for all public functions in this module
 .export display_room
 .export next_room
-
+.export get_next_room
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Variables that do not require initialization
@@ -35,30 +36,30 @@ roomDataTable:
     .byte <LeftOfName,>LeftOfName,                VIC_COL_ORANGE        ,$61,$06,$01,$86,$02         ;03; Left of Name                                            
     .byte <BlueMazeTop,>BlueMazeTop,              VIC_COL_BLUE          ,$21,$10,$05,$07,$06         ;04; Top of Blue Maze                       Blue            
     .byte <BlueMaze1,>BlueMaze1,                  VIC_COL_BLUE          ,$21,$1D,$06,$08,$04         ;05; Blue Maze #1                           Blue            
-;    .byte <BlueMazeBottom,>BlueMazeBottom,        VIC_COL_BLUE          ,$21,$07,$04,$03,$05         ;06; Bottom of Blue Maze                    Blue            
-;    .byte <BlueMazeCenter,>BlueMazeCenter,        VIC_COL_BLUE          ,$21,$04,$08,$06,$08         ;07; Center of Blue Maze                    Blue            
-;    .byte <BlueMazeEntry,>BlueMazeEntry,          VIC_COL_BLUE          ,$21,$05,$07,$01,$07         ;08; Blue Maze Entry                        Blue            
-;    .byte <MazeMiddle,>MazeMiddle,                VIC_COL_GRAY          ,$25,$0A,$0A,$0B,$0A         ;09; Maze Middle                            Invisible       
-;    .byte <MazeEntry,>MazeEntry,                  VIC_COL_GRAY          ,$25,$03,$09,$09,$09         ;0A; Maze Entry                             Invisible       
-;    .byte <MazeSide,>MazeSide,                    VIC_COL_GRAY          ,$25,$09,$0C,$1C,$0D         ;0B; Maze Side                              Invisible       
-;    .byte <SideCorridor,>SideCorridor,            VIC_COL_LIGHT_BLUE    ,$61,$1C,$0D,$1D,$0B         ;0C; (Side Corridor)                                         
-;  .byte <SideCorridor,>SideCorridor,            $B8,$A1,$0F,$0B,$0E,$0C         ;0D; (Side Corridor)                                         
-;  .byte <TopEntryRoom,>TopEntryRoom,            $A8,$21,$0D,$10,$0F,$10         ;0E; (Top Entry Room)                                        
+    .byte <BlueMazeBottom,>BlueMazeBottom,        VIC_COL_BLUE          ,$21,$07,$04,$03,$05         ;06; Bottom of Blue Maze                    Blue            
+    .byte <BlueMazeCenter,>BlueMazeCenter,        VIC_COL_BLUE          ,$21,$04,$08,$06,$08         ;07; Center of Blue Maze                    Blue            
+    .byte <BlueMazeEntry,>BlueMazeEntry,          VIC_COL_BLUE          ,$21,$05,$07,$01,$07         ;08; Blue Maze Entry                        Blue            
+    .byte <MazeMiddle,>MazeMiddle,                VIC_COL_GRAY          ,$25,$0A,$0A,$0B,$0A         ;09; Maze Middle                            Invisible       
+    .byte <MazeEntry,>MazeEntry,                  VIC_COL_GRAY          ,$25,$03,$09,$09,$09         ;0A; Maze Entry                             Invisible       
+    .byte <MazeSide,>MazeSide,                    VIC_COL_GRAY          ,$25,$09,$0C,$1C,$0D         ;0B; Maze Side                              Invisible       
+    .byte <SideCorridor,>SideCorridor,            VIC_COL_LIGHT_BLUE    ,$61,$1C,$0D,$1D,$0B         ;0C; (Side Corridor)                                         
+    .byte <SideCorridor,>SideCorridor,            $B8                   ,$A1,$0F,$0B,$0E,$0C         ;0D; (Side Corridor)                                         
+    .byte <TopEntryRoom,>TopEntryRoom,            $A8                   ,$21,$0D,$10,$0F,$10         ;0E; (Top Entry Room)                                        
     .byte <CastleDef,>CastleDef,                  VIC_COL_WHITE         ,$21,$0E,$0F,$0D,$0F         ;0F; White Castle                           White          
     .byte <CastleDef,>CastleDef,                  VIC_COL_BLACK         ,$21,$01,$1C,$04,$1C         ;10; Black Castle                           Black          
     .byte <CastleDef,>CastleDef,                  VIC_COL_YELLOW        ,$21,$06,$03,$02,$01         ;11; Yellow Castle                          Yellow          
     .byte <NumberRoom,>NumberRoom,                VIC_COL_YELLOW        ,$21,$12,$12,$12,$12         ;12; Yellow Castle Entry                    Yellow          
-;    .byte <BlackMaze1,>BlackMaze1,                VIC_COL_GRAY          ,$25,$15,$14,$15,$16         ;13; Black Maze #1                          Invisible       
-;    .byte <BlackMaze2,>BlackMaze2,                VIC_COL_GRAY          ,$24,$16,$15,$16,$13         ;14; Black Maze #2                          Invisible       
-;    .byte <BlackMaze3,>BlackMaze3,                VIC_COL_GRAY          ,$24,$13,$16,$13,$14         ;15; Black Maze #3                          Invisible       
-;    .byte <BlackMazeEntry,>BlackMazeEntry,        VIC_COL_GRAY          ,$25,$14,$13,$1B,$15         ;16; Black Maze Entry                       Invisible       
-;    .byte <RedMaze1,>RedMaze1,                    VIC_COL_RED           ,$21,$19,$18,$19,$18         ;17; Red Maze #1                            Red             
-;    .byte <RedMazeTop,>RedMazeTop,                VIC_COL_RED           ,$21,$1A,$17,$1A,$17         ;18; Top of Red Maze                        Red             
-;    .byte <RedMazeBottom,>RedMazeBottom,          VIC_COL_RED           ,$21,$17,$1A,$17,$1A         ;19; Bottom of Red Maze                     Red             
-;    .byte <WhiteCastleEntry,>WhiteCastleEntry,    VIC_COL_RED           ,$21,$18,$19,$18,$19         ;1A; White Castle Entry                     Red             
-;    .byte <TwoExitRoom,>TwoExitRoom,              VIC_COL_RED           ,$21,$89,$89,$89,$89         ;1B; Black Castle Entry                     Red             
+    .byte <BlackMaze1,>BlackMaze1,                VIC_COL_GRAY          ,$25,$15,$14,$15,$16         ;13; Black Maze #1                          Invisible       
+    .byte <BlackMaze2,>BlackMaze2,                VIC_COL_GRAY          ,$24,$16,$15,$16,$13         ;14; Black Maze #2                          Invisible       
+    .byte <BlackMaze3,>BlackMaze3,                VIC_COL_GRAY          ,$24,$13,$16,$13,$14         ;15; Black Maze #3                          Invisible       
+    .byte <BlackMazeEntry,>BlackMazeEntry,        VIC_COL_GRAY          ,$25,$14,$13,$1B,$15         ;16; Black Maze Entry                       Invisible       
+    .byte <RedMaze1,>RedMaze1,                    VIC_COL_RED           ,$21,$19,$18,$19,$18         ;17; Red Maze #1                            Red             
+    .byte <RedMazeTop,>RedMazeTop,                VIC_COL_RED           ,$21,$1A,$17,$1A,$17         ;18; Top of Red Maze                        Red             
+    .byte <RedMazeBottom,>RedMazeBottom,          VIC_COL_RED           ,$21,$17,$1A,$17,$1A         ;19; Bottom of Red Maze                     Red             
+    .byte <WhiteCastleEntry,>WhiteCastleEntry,    VIC_COL_RED           ,$21,$18,$19,$18,$19         ;1A; White Castle Entry                     Red             
+    .byte <TwoExitRoom,>TwoExitRoom,              VIC_COL_RED           ,$21,$89,$89,$89,$89         ;1B; Black Castle Entry                     Red             
     .byte <NumberRoom,>NumberRoom,                VIC_COL_PURPLE        ,$21,$1D,$07,$8C,$08         ;1C; Other Purple Room                      Purple          
-;    .byte <TopEntryRoom,>TopEntryRoom,            VIC_COL_RED           ,$21,$8F,$01,$10,$03         ;1D; (Top Entry Room)                       Red             
+    .byte <TopEntryRoom,>TopEntryRoom,            VIC_COL_RED           ,$21,$8F,$01,$10,$03         ;1D; (Top Entry Room)                       Red             
     .byte <BelowYellowCastle,>BelowYellowCastle,  VIC_COL_YELLOW        ,$21,$06,$01,$06,$03         ;1E; Name Room                              Yellow        
 
 ; Room Exits Replacement Data
@@ -127,6 +128,61 @@ BlueMaze1:
     .byte $a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0
     .byte $20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20
     .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+
+BlueMazeBottom:
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+    .byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$60,$60,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$60,$60,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+    .byte $a0,$a0,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$a0,$a0
+    .byte $a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0
+    .byte $20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$60,$60,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+
+BlueMazeCenter:    
+    .byte $a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0
+    .byte $20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$20,$60,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+    .byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$60,$20
+    .byte $a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$60,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0
+    .byte $20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+
+BlueMazeEntry:
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$60,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+    .byte $20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20
+    .byte $a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0
+    .byte $20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$20,$20,$a0,$a0,$20,$20,$20,$20,$20,$20
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+    .byte $20,$20,$60,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$60,$60,$60,$60,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+    .byte $a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$20,$20,$20,$20,$20,$20,$20,$20,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0,$a0
+
+MazeMiddle:
+
+MazeEntry:
+
+MazeSide:
+
+SideCorridor:
+
+TopEntryRoom:
+
+BlackMaze1:
+
+BlackMaze2:
+
+BlackMaze3:
+
+BlackMazeEntry:
+
+RedMaze1:
+
+RedMazeTop:
+
+RedMazeBottom:
+
+WhiteCastleEntry:
+
+TwoExitRoom:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Main Program Code
@@ -279,13 +335,30 @@ bottom_4_lines_clear:
 
 .endproc
 
-; Set "current_room" to the room we are moving into
+; Move to the next room based on the direction we are moving
 ;   Uses:
 ;     current_room - current room number
-;     y register - the direction we are moving (4=up,5=left,6=right,7=down)
+;     y register - the direction we are moving (4=up,5=left,
+;                  6=right,7=down)
 ;   Modifies:
-;     TMP1, PTR1
+;     current_room
 .proc next_room : near
+    ; Get the next room based on the direction we are moving
+    jsr get_next_room
+    sta current_room
+    rts
+.endproc
+
+
+; Get the next room based on the direction we are moving
+;   Uses:
+;     current_room - current room number
+;     y register - the direction we are moving (4=up,5=left,
+;                  6=right,7=down)
+;     difficulty_level - current difficulty level (0-2)
+;   Modifies:
+;     A - next room number
+.proc get_next_room : near
 
     ; TMP1 = current_room * 8
     lda current_room
@@ -311,43 +384,25 @@ bottom_4_lines_clear:
     ; Is A >= $80?
     bmi next_room_use_replacement   
     
-    ; No, just use TMP1
-    sta current_room
+    ; No, just use TMP1    
     rts
 
 next_room_use_replacement:
-
-    ; PTR1 = &RoomDiffs + ((A AND $7f) * 3) + difficulty_level 
-    
-    ; A = (A AND $7f) * 3
+        
+    ; A = (A AND $7f) + roomDiffs + difficulty_level
     and #$7f
-    sta TMP1
-    asl a
-    asl a    
     clc
-    adc TMP1
-
-    ; PTR1 = A + roomDiffs     
-    clc
+    adc difficulty_level        
     adc #<RoomDiffs
     sta PTR1
     lda #0
     adc #>RoomDiffs
     sta PTR1+1
-
-    ; PTR1 += difficulty_level
-    lda PTR1
-    clc
-    adc difficulty_level
-    sta PTR1
-    lda PTR1+1
-    adc #0
-    sta PTR1+1
+    
 
     ; current_room = *PTR1
     ldy #$00
-    lda (PTR1), y
-    sta current_room
+    lda (PTR1), y    
     
     rts
 .endproc

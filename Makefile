@@ -30,6 +30,8 @@ MAIN_ROOT = adventure
 # Define sources for the main program and overlays
 MAIN_SOURCES = 	src/main.s \
 				src/rooms.s	\
+				src/print.s	\
+				src/math.s	\
 				src/actor.s 			
 
 # Define output binaries

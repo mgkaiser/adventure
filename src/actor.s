@@ -13,12 +13,18 @@
 .export dragon_2    ; Sprite 1
 .export dragon_3    ; Sprite 1
 .export bat         ; Sprite 2
-.export bridge      ; Sprite 3
-.export key         ; Sprite 4  
+.export bridge      ; Sprite 3 
+.export gold_port   ; Sprite 8 - Not really a sprite.  Sprite > 7 means use character graphics
+.export black_port  ; Sprite 8 - Not really a sprite.  Sprite > 7 means use character graphics
+.export white_port  ; Sprite 8 - Not really a sprite.  Sprite > 7 means use character graphics
+.export gold_key    ; Sprite 4  
+.export black_key   ; Sprite 4  
+.export white_key   ; Sprite 4  
 .export magnet      ; Sprite 5
 .export sword       ; Sprite 6
 .export chalice     ; Sprite 7
 .export number      ; Sprite 7 - Number and chalice never on screen at same time
+.export sidewall    ; Sprite 9 - Not really a sprite.  Sprite > 7 means use character graphics  
 
 ; Define exports for sprite definitions
 .export dragon_open
@@ -48,7 +54,13 @@ bridge:     .res .sizeof(actor) ; The bridge actor structure
 sword:      .res .sizeof(actor) ; The sword actor structure
 number:     .res .sizeof(actor) ; The number actor structure
 chalice:    .res .sizeof(actor) ; The chalice actor structure
-key:        .res .sizeof(actor) ; The key actor structure   
+gold_key:   .res .sizeof(actor) ; The key actor structure   
+white_key:  .res .sizeof(actor) ; The key actor structure   
+black_key:  .res .sizeof(actor) ; The key actor structure   
+gold_port:  .res .sizeof(actor) ; The key actor structure   
+white_port: .res .sizeof(actor) ; The key actor structure   
+black_port: .res .sizeof(actor) ; The key actor structure   
+sidewall:   .res .sizeof(actor) ; The sidewall actor structure 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Variables that DO require initialization
@@ -58,10 +70,10 @@ or_table: .byte $01, $02, $04, $08, $10, $20, $40, $80
 and_table: .byte $FE, $FD, $FB, $F7, $EF, $DF, $BF, $7F
 
 player_defaults:
-    .byte dragon_open / 64  ; sprite_ptr    
+    .byte player_sp / 64    ; sprite_ptr    
     .byte 0                 ; sprite_num
-    .byte 1                 ; room_num
-    .byte VIC_COL_YELLOW    ; color
+    .byte $11               ; room_num
+    .byte VIC_COL_BLACK     ; color
     .word 100               ; x_pos
     .byte 150               ; y_pos
     .word 0                 ; dx   
@@ -72,7 +84,7 @@ player_defaults:
 number_defaults:
     .byte number_one / 64   ; sprite_ptr    
     .byte 7                 ; sprite_num
-    .byte 0                 ; room_num
+    .byte $00               ; room_num
     .byte VIC_COL_GREEN     ; color
     .word 185               ; x_pos
     .byte 134               ; y_pos
@@ -130,6 +142,15 @@ number_three:   .byte $70,$00,$00,$88,$00,$00,$08,$00
                 .byte $00,$00,$00,$00,$00,$00,$00,$00
                 .byte $00,$00,$00,$00,$00,$00,$00,$00
                 .byte $00,$00,$00,$00,$00,$00,$00,$01
+
+player_sp:      .byte $FF,$00,$00,$FF,$00,$00,$FF,$00
+                .byte $00,$FF,$00,$00,$FF,$00,$00,$FF
+                .byte $00,$00,$FF,$00,$00,$FF,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$00
+                .byte $00,$00,$00,$00,$00,$00,$00,$01                
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Main Program Code
@@ -189,6 +210,15 @@ actor_copy_loop:
     ldy #actor::sprite_num
     lda (R0), y
     sta R1L
+
+    ; Is the sprite number 8 or 9?    
+    cmp #$08
+    bne :+
+    jmp actor_as_character_graphics
+:   cmp #$09 
+    bne :+
+    jmp actor_as_character_graphics
+:   
 
     ; Is the actor in the current room?
     ldy #actor::room_num
@@ -268,6 +298,21 @@ actor_update_sprite_hide:
     sta VIC_SPRITE_EN
 
 actor_update_sprite_end:    
+
+    rts
+
+actor_as_character_graphics:
+
+    ; Is the actor in the current room?
+    ldy #actor::room_num
+    lda (R0), y
+    cmp current_room
+    bne actor_as_character_graphics_end    
+
+    ; Display the right characters graphics and color for the actor
+    ; If Sprite number is 8, it's a portcullis and sprite_ptr represents how open it is
+
+actor_as_character_graphics_end:    
 
     rts
 

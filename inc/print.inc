@@ -3,6 +3,11 @@
     .import print: near   
     .import convert_16bit_to_decimal: near     
     .import convert_16bitptr_to_decimal: near
+    .import convert_16bit_to_hex: near
+    .import convert_16bitptr_to_hex: near
+    .import convert_nibble_to_hex_char: near  
+    .import convert_8bit_to_hex: near
+    .import convert_8bitptr_to_hex: near  
 .endif
 
 .macro getkey
@@ -18,6 +23,12 @@
     ldy #>str_addr
     jsr print
 .endmacro
+
+.macro print_hex8 value
+    lda value 
+    sta TMP1
+    jsr convert_8bit_to_hex
+.endmacro   
 
 .macro print_decimal_at_16 col_pos, row_pos, value_ptr, value_ofs
     ldx row_pos
@@ -42,6 +53,16 @@
     lda #$00    
     sta TMP1+1    
     jsr convert_16bit_to_decimal
+.endmacro
+
+.macro print_hex_at_8 col_pos, row_pos, value_ptr, value_ofs
+    ldx row_pos
+    ldy col_pos
+    jsr gotoxy
+    ldy #value_ofs
+    lda (value_ptr),y
+    sta TMP1    
+    jsr convert_8bit_to_hex
 .endmacro
 
 .macro scnclr
